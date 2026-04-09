@@ -455,8 +455,7 @@ void CB2_ChooseStarter(void)
     BeginNormalPaletteFade(PALETTES_ALL, 0, 0x10, 0, RGB_BLACK);
 
     // Randomize which Gen 1-3 starter species show up in each category.
-    // sStarterMon[0] = GetRandomStarterFromList(sGrassStarters, ARRAY_COUNT(sGrassStarters));
-    sStarterMon[0] = SPECIES_HAUNTER;
+    sStarterMon[0] = GetRandomStarterFromList(sGrassStarters, ARRAY_COUNT(sGrassStarters));
     sStarterMon[1] = GetRandomStarterFromList(sFireStarters, ARRAY_COUNT(sFireStarters));
     sStarterMon[2] = GetRandomStarterFromList(sWaterStarters, ARRAY_COUNT(sWaterStarters));
 
