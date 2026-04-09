@@ -15,6 +15,7 @@
 #include "dewford_trend.h"
 #include "berry.h"
 #include "rtc.h"
+#include "clock.h"
 #include "easy_chat.h"
 #include "event_data.h"
 #include "money.h"
@@ -143,32 +144,69 @@ static void ClearFrontierRecord(void)
 }
 
 #if !IS_FRLG && B_SKIP_NEW_GAME_INTRO
-// Match InsideOfTruck_EventScript_SetIntroFlags* so story state matches having left the truck.
+static void ApplyRoute101BirchNewGameSetup(void)
+{
+#if B_START_NEW_GAME_ON_ROUTE101_BIRCH_RESCUE
+    VarSet(VAR_ROUTE101_NEW_GAME_AUTO_BIRCH, 1);
+    FlagClear(FLAG_HIDE_ROUTE_101_BIRCH_ZIGZAGOON_BATTLE);
+    FlagClear(FLAG_HIDE_ROUTE_101_ZIGZAGOON);
+#endif
+}
+
+// Match post–intro story: truck flags, clock + TV done, rival mom + rival met, player starts outside.
 static void ApplyPostMovingVanIntroFlags(void)
 {
     if (gSaveBlock2Ptr->playerGender == MALE)
     {
         SetLastHealLocationWarp(HEAL_LOCATION_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F);
-        VarSet(VAR_LITTLEROOT_INTRO_STATE, 1);
+        VarSet(VAR_LITTLEROOT_INTRO_STATE, 7);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_MOM);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_TRUCK);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_MOM);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_SIBLING);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F_POKE_BALL);
         VarSet(VAR_LITTLEROOT_HOUSES_STATE_BRENDAN, 1);
-        SetDynamicWarpWithCoords(0, MAP_GROUP(MAP_LITTLEROOT_TOWN), MAP_NUM(MAP_LITTLEROOT_TOWN), WARP_ID_NONE, 3, 10);
+        VarSet(VAR_LITTLEROOT_HOUSES_STATE_MAY, 2);
+        SetDynamicWarpWithCoords(0, MAP_GROUP(MAP_LITTLEROOT_TOWN), MAP_NUM(MAP_LITTLEROOT_TOWN), WARP_ID_NONE, 5, 10);
+
+        RtcCalcLocalTimeOffset(0, B_INTRO_FIXED_CLOCK_HOUR, B_INTRO_FIXED_CLOCK_MINUTE, 0);
+        InitTimeBasedEvents();
+        FlagSet(FLAG_SET_WALL_CLOCK);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_PLAYERS_HOUSE_VIGOROTH_1);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_PLAYERS_HOUSE_VIGOROTH_2);
+        FlagSet(FLAG_SYS_TV_HOME);
+        FlagSet(FLAG_MET_RIVAL_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_MAY);
+        FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_BEDROOM);
+        VarSet(VAR_LITTLEROOT_RIVAL_STATE, 3);
+        VarSet(VAR_LITTLEROOT_TOWN_STATE, 1);
+        ApplyRoute101BirchNewGameSetup();
     }
     else
     {
         SetLastHealLocationWarp(HEAL_LOCATION_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
-        VarSet(VAR_LITTLEROOT_INTRO_STATE, 2);
+        VarSet(VAR_LITTLEROOT_INTRO_STATE, 7);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_MOM);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_TRUCK);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_MOM);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_SIBLING);
         FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_2F_POKE_BALL);
         VarSet(VAR_LITTLEROOT_HOUSES_STATE_MAY, 1);
-        SetDynamicWarpWithCoords(0, MAP_GROUP(MAP_LITTLEROOT_TOWN), MAP_NUM(MAP_LITTLEROOT_TOWN), WARP_ID_NONE, 12, 10);
+        VarSet(VAR_LITTLEROOT_HOUSES_STATE_BRENDAN, 2);
+        SetDynamicWarpWithCoords(0, MAP_GROUP(MAP_LITTLEROOT_TOWN), MAP_NUM(MAP_LITTLEROOT_TOWN), WARP_ID_NONE, 14, 10);
+
+        RtcCalcLocalTimeOffset(0, B_INTRO_FIXED_CLOCK_HOUR, B_INTRO_FIXED_CLOCK_MINUTE, 0);
+        InitTimeBasedEvents();
+        FlagSet(FLAG_SET_WALL_CLOCK);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_PLAYERS_HOUSE_VIGOROTH_1);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_PLAYERS_HOUSE_VIGOROTH_2);
+        FlagSet(FLAG_SYS_TV_HOME);
+        FlagSet(FLAG_MET_RIVAL_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_BRENDAN);
+        FlagClear(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_BEDROOM);
+        VarSet(VAR_LITTLEROOT_RIVAL_STATE, 3);
+        VarSet(VAR_LITTLEROOT_TOWN_STATE, 1);
+        ApplyRoute101BirchNewGameSetup();
     }
 }
 #endif
@@ -182,10 +220,14 @@ static void WarpToTruck(void)
     else
     {
 #if B_SKIP_NEW_GAME_INTRO
+#if B_START_NEW_GAME_ON_ROUTE101_BIRCH_RESCUE
+        SetWarpDestination(MAP_GROUP(MAP_ROUTE101), MAP_NUM(MAP_ROUTE101), WARP_ID_NONE, 10, 20);
+#else
         if (gSaveBlock2Ptr->playerGender == MALE)
-            SetWarpDestinationToHealLocation(HEAL_LOCATION_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F);
+            SetWarpDestination(MAP_GROUP(MAP_LITTLEROOT_TOWN), MAP_NUM(MAP_LITTLEROOT_TOWN), WARP_ID_NONE, 5, 10);
         else
-            SetWarpDestinationToHealLocation(HEAL_LOCATION_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
+            SetWarpDestination(MAP_GROUP(MAP_LITTLEROOT_TOWN), MAP_NUM(MAP_LITTLEROOT_TOWN), WARP_ID_NONE, 14, 10);
+#endif
 #else
         SetWarpDestination(MAP_GROUP(MAP_INSIDE_OF_TRUCK), MAP_NUM(MAP_INSIDE_OF_TRUCK), WARP_ID_NONE, -1, -1);
 #endif

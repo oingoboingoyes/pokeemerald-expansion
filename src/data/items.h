@@ -7248,7 +7248,7 @@ const struct ItemInfo gItemsInfo[] =
         .description = COMPOUND_STRING(
             "Unlabeled chemicals.\n"
             "May make a Pokémon\n"
-            "Shiny—or make it faint."),
+            "Shiny - or make it faint."),
         .pocket = POCKET_ITEMS,
         .sortType = ITEM_TYPE_FIELD_USE,
         .type = ITEM_USE_PARTY_MENU,
