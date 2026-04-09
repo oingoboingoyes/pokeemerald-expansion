@@ -8,8 +8,15 @@ Route101_OnTransition:
 	end
 
 Route101_OnFrame:
+	map_script_2 VAR_ROUTE101_NEW_GAME_AUTO_BIRCH, 1, Route101_EventScript_NewGameAutoBirchRescue
 	map_script_2 VAR_ROUTE101_STATE, 0, Route101_EventScript_HideMapNamePopup
 	.2byte 0
+
+Route101_EventScript_NewGameAutoBirchRescue::
+	setvar VAR_ROUTE101_NEW_GAME_AUTO_BIRCH, 0
+	setflag FLAG_HIDE_MAP_NAME_POPUP
+	setvar VAR_ROUTE101_STATE, 1
+	goto Route101_EventScript_StartBirchRescue
 
 Route101_EventScript_HideMapNamePopup::
 	setflag FLAG_HIDE_MAP_NAME_POPUP

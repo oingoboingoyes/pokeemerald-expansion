@@ -150,6 +150,16 @@
 
 // New game (Emerald only — FRLG uses Oak speech instead)
 // If TRUE: skips Birch's long intro and the moving-van cutscene; you still choose gender and name.
+// Also: you start outside in LITTLEROOT with the clock already set (no wall-clock UI, no downstairs TV,
+// no rival’s mom or rival cutscenes); story vars match having done all of that.
 #define B_SKIP_NEW_GAME_INTRO       TRUE
+
+// Used only when B_SKIP_NEW_GAME_INTRO (Emerald): initial local time after RtcCalcLocalTimeOffset day 0.
+#define B_INTRO_FIXED_CLOCK_HOUR    10
+#define B_INTRO_FIXED_CLOCK_MINUTE  0
+
+// When TRUE (requires B_SKIP_NEW_GAME_INTRO): new game begins on ROUTE 101; first frame runs the Birch / ZIGZAGOON
+// rescue cutscene (“H-help me!”). Same story flags as the outdoor Littleroot start; heal / dynamic warp stay in Littleroot.
+#define B_START_NEW_GAME_ON_ROUTE101_BIRCH_RESCUE TRUE
 
 #endif // GUARD_CONFIG_OVERWORLD_H
