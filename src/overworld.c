@@ -1882,11 +1882,8 @@ void CB2_NewGame(void)
     StopMapMusic();
     ResetSafariZoneFlag_();
     NewGameInitData();
-    // Ensure Rare Candy is present in the starting bag.
-    // Bag data can be re-initialized during early new-game setup, so do it again here.
     SetBagItemsPointers();
-    if (!CheckBagHasItem(ITEM_RARE_CANDY, 1))
-        AddBagItem(ITEM_RARE_CANDY, 999);
+    AddBagItem(ITEM_UNIDENTIFIED_DRUGS, 10);
     ResetInitialPlayerAvatarState();
     PlayTimeCounter_Start();
     ScriptContext_Init();

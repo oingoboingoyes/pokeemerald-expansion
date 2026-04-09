@@ -7241,6 +7241,23 @@ const struct ItemInfo gItemsInfo[] =
         .iconPalette = gItemIconPalette_Glimmoranite,
     },
 
+    [ITEM_UNIDENTIFIED_DRUGS] =
+    {
+        .name = ITEM_NAME("Unidentified Drugs"),
+        .price = (I_PRICE >= GEN_9) ? 50000 : 10000,
+        .description = COMPOUND_STRING(
+            "Unlabeled chemicals.\n"
+            "May make a Pokémon\n"
+            "Shiny—or make it faint."),
+        .pocket = POCKET_ITEMS,
+        .sortType = ITEM_TYPE_FIELD_USE,
+        .type = ITEM_USE_PARTY_MENU,
+        .fieldUseFunc = ItemUseOutOfBattle_UnidentifiedDrugs,
+        .flingPower = 10,
+        .iconPic = gItemIcon_ShinyCharm,
+        .iconPalette = gItemIconPalette_ShinyCharm,
+    },
+
 // Gems
     #if I_PRICE >= GEN_9
         #define GEM_PRICE 15000
