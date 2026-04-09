@@ -1051,9 +1051,14 @@ enum __attribute__((packed)) Item
     ITEM_TATSUGIRINITE = 872,
     ITEM_GLIMMORANITE = 873,
 
+    // Custom Items
+    ITEM_UNIDENTIFIED_DRUGS = 874,
+
     ITEMS_COUNT,
     ITEM_FIELD_ARROW = ITEMS_COUNT,
 };
+
+#define ITEM_DIRTY_NEEDLE ITEM_UNIDENTIFIED_DRUGS
 
 // A special item id associated with "Cancel"/"Exit" etc. in a list of items or decorations
 // Its icon is defined at ITEMS_COUNT as the "return to field" arrow

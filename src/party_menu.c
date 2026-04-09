@@ -14,6 +14,7 @@
 #include "decompress.h"
 #include "easy_chat.h"
 #include "event_data.h"
+#include "event_scripts.h"
 #include "event_object_movement.h"
 #include "evolution_scene.h"
 #include "field_control_avatar.h"
@@ -64,6 +65,7 @@
 #include "string_util.h"
 #include "strings.h"
 #include "task.h"
+#include "trainer_hill.h"
 #include "text.h"
 #include "text_window.h"
 #include "trade.h"
@@ -310,6 +312,10 @@ static bool8 DoesSelectedMonKnowHM(u8 *);
 static void PartyMenuRemoveWindow(u8 *);
 static void CB2_SetUpExitToBattleScreen(void);
 static void Task_ClosePartyMenuAfterText(u8);
+static bool32 IsEntirePlayerPartyFainted(void);
+static const u8 *GetFieldWhiteOutScriptForLocation(void);
+static void Task_UnidentifiedDrugs_WaitFaintMsgThenFieldWhiteOut(u8 taskId);
+static void Task_UnidentifiedDrugs_FieldWhiteOutFadeWait(u8 taskId);
 static void TryTutorSelectedMon(u8);
 static void TryGiveMailToSelectedMon(u8);
 static void TryGiveItemOrMailToSelectedMon(u8);
@@ -512,6 +518,8 @@ static void Task_FirstBattleEnterParty_WaitFadeNormal(u8 taskId);
 static const u8 sText_askText[] = _("Would you like to change {STR_VAR_1}'s\nability to {STR_VAR_2}?");
 static const u8 sText_doneText[] = _("{STR_VAR_1}'s ability became\n{STR_VAR_2}!{PAUSE_UNTIL_PRESS}");
 static const u8 sText_BasePointsResetToZero[] = _("{STR_VAR_1}'s base points\nwere all reset to zero!{PAUSE_UNTIL_PRESS}");
+static const u8 sText_UnidentifiedDrugsShiny[] = _("{STR_VAR_1} became Shiny!{PAUSE_UNTIL_PRESS}");
+static const u8 sText_UnidentifiedDrugsFaint[] = _("The drugs were too strong!\n{STR_VAR_1} fainted!{PAUSE_UNTIL_PRESS}");
 static const u8 sText_CannotSendMonToBoxHM[] = _("Cannot send that mon to the box,\nbecause it knows a HM move.{PAUSE_UNTIL_PRESS}");
 static const u8 sText_CannotSendMonToBoxPartner[] = _("Cannot send a mon that doesn't\nbelong to you to the box.{PAUSE_UNTIL_PRESS}");
 
@@ -5137,6 +5145,112 @@ void ItemUseCB_Mint(u8 taskId, TaskFunc task)
     tNewNature = GetItemSecondaryId(gSpecialVar_ItemId);
     SetWordTaskArg(taskId, tOldFunc, (uintptr_t)(gTasks[taskId].func));
     gTasks[taskId].func = Task_Mint;
+}
+
+void ItemUseCB_UnidentifiedDrugs(u8 taskId, TaskFunc task)
+{
+    struct Pokemon *mon = &gPlayerParty[gPartyMenu.slotId];
+    enum Item item = gSpecialVar_ItemId;
+    u8 slot = gPartyMenu.slotId;
+    u8 makeShiny = TRUE;
+    u32 hpZero = 0;
+    u32 statusNone = STATUS1_NONE;
+
+    if (!GetMonData(mon, MON_DATA_SPECIES)
+        || GetMonData(mon, MON_DATA_IS_EGG)
+        || GetMonData(mon, MON_DATA_HP) == 0
+        || IsMonShiny(mon))
+    {
+        gPartyMenuUseExitCallback = FALSE;
+        PlaySE(SE_SELECT);
+        DisplayPartyMenuMessage(gText_WontHaveEffect, TRUE);
+        ScheduleBgCopyTilemapToVram(2);
+        gTasks[taskId].func = task;
+        return;
+    }
+
+    gPartyMenuUseExitCallback = TRUE;
+    RemoveBagItem(item, 1);
+
+    if (Random() % 2 == 0)
+    {
+        SetMonData(mon, MON_DATA_IS_SHINY, &makeShiny);
+        PlaySE(SE_USE_ITEM);
+        FreeAndDestroyMonIconSprite(&gSprites[sPartyMenuBoxes[slot].monSpriteId]);
+        CreatePartyMonIconSprite(mon, &sPartyMenuBoxes[slot], slot);
+        GetMonNickname(mon, gStringVar1);
+        StringExpandPlaceholders(gStringVar4, sText_UnidentifiedDrugsShiny);
+        DisplayPartyMenuMessage(gStringVar4, TRUE);
+        ScheduleBgCopyTilemapToVram(2);
+        gTasks[taskId].func = task;
+    }
+    else
+    {
+        SetMonData(mon, MON_DATA_STATUS, &statusNone);
+        SetMonData(mon, MON_DATA_HP, &hpZero);
+        PlaySE(SE_FAINT);
+        SetPartyMonAilmentGfx(mon, &sPartyMenuBoxes[slot]);
+        DisplayPartyPokemonHPCheck(mon, &sPartyMenuBoxes[slot], 1);
+        DisplayPartyPokemonMaxHPCheck(mon, &sPartyMenuBoxes[slot], 1);
+        DisplayPartyPokemonHPBarCheck(mon, &sPartyMenuBoxes[slot]);
+        UpdatePartyMonHPBar(sPartyMenuBoxes[slot].monSpriteId, mon);
+        LoadPartyBoxPalette(&sPartyMenuBoxes[slot], GetPartyBoxPaletteFlags(slot, 1));
+        AnimatePartySlot(slot, 1);
+        ScheduleBgCopyTilemapToVram(0);
+        GetMonNickname(mon, gStringVar1);
+        StringExpandPlaceholders(gStringVar4, sText_UnidentifiedDrugsFaint);
+        DisplayPartyMenuMessage(gStringVar4, TRUE);
+        ScheduleBgCopyTilemapToVram(2);
+        if (gPartyMenu.menuType == PARTY_MENU_TYPE_FIELD && IsEntirePlayerPartyFainted())
+            gTasks[taskId].func = Task_UnidentifiedDrugs_WaitFaintMsgThenFieldWhiteOut;
+        else
+            gTasks[taskId].func = task;
+    }
+}
+
+static bool32 IsEntirePlayerPartyFainted(void)
+{
+    int i;
+
+    for (i = 0; i < PARTY_SIZE; i++)
+    {
+        u16 species = GetMonData(&gPlayerParty[i], MON_DATA_SPECIES_OR_EGG);
+
+        if (species != SPECIES_NONE && species != SPECIES_EGG
+            && GetMonData(&gPlayerParty[i], MON_DATA_HP) != 0)
+            return FALSE;
+    }
+    return TRUE;
+}
+
+static const u8 *GetFieldWhiteOutScriptForLocation(void)
+{
+    if (CurrentBattlePyramidLocation() || InBattlePike() || InTrainerHillChallenge())
+        return EventScript_FrontierFieldWhiteOut;
+    return EventScript_FieldWhiteOut;
+}
+
+static void Task_UnidentifiedDrugs_WaitFaintMsgThenFieldWhiteOut(u8 taskId)
+{
+    if (!IsPartyMenuTextPrinterActive())
+    {
+        ScriptContext_SetupScript(GetFieldWhiteOutScriptForLocation());
+        BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
+        gTasks[taskId].func = Task_UnidentifiedDrugs_FieldWhiteOutFadeWait;
+    }
+}
+
+static void Task_UnidentifiedDrugs_FieldWhiteOutFadeWait(u8 taskId)
+{
+    if (!gPaletteFade.active)
+    {
+        if (gPartyMenu.menuType == PARTY_MENU_TYPE_IN_BATTLE)
+            UpdatePartyToFieldOrder();
+        ResetSpriteData();
+        FreePartyPointers();
+        DestroyTask(taskId);
+        SetMainCallback2(CB2_ReturnToFieldContinueScriptPlayMapMusic);
+    }
 }
 
 #undef tState
