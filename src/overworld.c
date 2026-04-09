@@ -1,4 +1,5 @@
 #include "global.h"
+#include "config/overworld.h"
 #include "overworld.h"
 #include "battle_pyramid.h"
 #include "battle_setup.h"
@@ -1881,6 +1882,11 @@ void CB2_NewGame(void)
     StopMapMusic();
     ResetSafariZoneFlag_();
     NewGameInitData();
+    // Ensure Rare Candy is present in the starting bag.
+    // Bag data can be re-initialized during early new-game setup, so do it again here.
+    SetBagItemsPointers();
+    if (!CheckBagHasItem(ITEM_RARE_CANDY, 1))
+        AddBagItem(ITEM_RARE_CANDY, 999);
     ResetInitialPlayerAvatarState();
     PlayTimeCounter_Start();
     ScriptContext_Init();
@@ -1888,7 +1894,11 @@ void CB2_NewGame(void)
     if (IS_FRLG)
         gFieldCallback = FieldCB_WarpExitFadeFromBlack;
     else
+#if B_SKIP_NEW_GAME_INTRO
+        gFieldCallback = FieldCB_WarpExitFadeFromBlack;
+#else
         gFieldCallback = ExecuteTruckSequence;
+#endif
     gFieldCallback2 = NULL;
     DoMapLoadLoop(&gMain.state);
     SetFieldVBlankCallback();

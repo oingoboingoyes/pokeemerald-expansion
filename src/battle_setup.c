@@ -963,6 +963,23 @@ static void CB2_GiveStarter(void)
     *GetVarPointer(VAR_STARTER_MON) = gSpecialVar_Result;
     starterMon = GetStarterPokemon(gSpecialVar_Result);
     ScriptGiveMon(starterMon, 5, ITEM_NONE);
+
+    // Testing helper: if the starter is Haunter, force damaging moves
+    // so it can hit Zigzagoon (Normal-types won't take Ghost moves in Gen 3).
+    if (starterMon == SPECIES_HAUNTER)
+    {
+        for (u8 i = 0; i < PARTY_SIZE; i++)
+        {
+            if (GetMonData(&gPlayerParty[i], MON_DATA_SANITY_HAS_SPECIES))
+            {
+                SetMonMoveSlot(&gPlayerParty[i], MOVE_TACKLE, 0);
+                SetMonMoveSlot(&gPlayerParty[i], MOVE_QUICK_ATTACK, 1);
+                // Keep the remaining slots as-is (or whatever Haunter rolled naturally).
+                break;
+            }
+        }
+    }
+
     ResetTasks();
     PlayBattleBGM();
     SetMainCallback2(CB2_StartFirstBattle);

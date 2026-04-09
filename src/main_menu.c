@@ -1,4 +1,5 @@
 #include "global.h"
+#include "config/overworld.h"
 #include "trainer_pokemon_sprites.h"
 #include "bg.h"
 #include "constants/rgb.h"
@@ -90,7 +91,7 @@
  *    the selection, then go back to Task_HighlightSelectedMainMenuItem.
  *
  * Task_HandleMainMenuAPressed
- *  - If the user selected New Game, advance to Task_NewGameBirchSpeech_Init.
+ *  - If the user selected New Game, advance to Task_NewGameBirchSpeech_Init (or fast path if B_SKIP_NEW_GAME_INTRO).
  *  - If the user selected Continue, advance to CB2_ContinueSavedGame.
  *  - If the user selected the Options menu, advance to CB2_InitOptionMenu.
  *  - If the user selected Mystery Gift, advance to CB2_InitMysteryGift. However,
@@ -1316,11 +1317,32 @@ static void Task_NewGameBirchSpeech_Init(u8 taskId)
     ResetAllPicSprites();
     AddBirchSpeechObjects(taskId);
     BeginNormalPaletteFade(PALETTES_ALL, 0, 16, 0, RGB_BLACK);
+#if !IS_FRLG && B_SKIP_NEW_GAME_INTRO
+    gTasks[taskId].tBG1HOFS = -60;
+    SetGpuReg(REG_OFFSET_BG1HOFS, -60);
+    InitWindows(sNewGameBirchSpeechTextWindows);
+    LoadMainMenuWindowFrameTiles(0, 0xF3);
+    LoadMessageBoxGfx(0, BIRCH_DLG_BASE_TILE_NUM, BG_PLTT_ID(15));
+    DrawDialogFrameWithCustomTile(0, TRUE, BIRCH_DLG_BASE_TILE_NUM);
+    PutWindowTilemap(0);
+    CopyWindowToVram(0, COPYWIN_GFX);
+    NewGameBirchSpeech_ClearWindow(0);
+    gSprites[gTasks[taskId].tBrendanSpriteId].x = 180;
+    gSprites[gTasks[taskId].tBrendanSpriteId].y = 60;
+    gSprites[gTasks[taskId].tBrendanSpriteId].invisible = FALSE;
+    gSprites[gTasks[taskId].tBrendanSpriteId].oam.objMode = ST_OAM_OBJ_NORMAL;
+    gTasks[taskId].tPlayerSpriteId = gTasks[taskId].tBrendanSpriteId;
+    gTasks[taskId].tPlayerGender = MALE;
+    gTasks[taskId].func = Task_NewGameBirchSpeech_BoyOrGirl;
+    gTasks[taskId].data[3] = 0xFF;
+    gTasks[taskId].tTimer = 0;
+#else
     gTasks[taskId].tBG1HOFS = 0;
     gTasks[taskId].func = Task_NewGameBirchSpeech_WaitToShowBirch;
     gTasks[taskId].tPlayerSpriteId = SPRITE_NONE;
     gTasks[taskId].data[3] = 0xFF;
     gTasks[taskId].tTimer = 0xD8;
+#endif
     PlayBGM(MUS_ROUTE122);
     ShowBg(0);
     ShowBg(1);

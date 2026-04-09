@@ -21,6 +21,7 @@
 #include "trainer_pokemon_sprites.h"
 #include "trig.h"
 #include "window.h"
+#include "random.h"
 #include "constants/songs.h"
 #include "constants/rgb.h"
 
@@ -110,16 +111,48 @@ static const u8 sStarterLabelCoords[STARTER_MON_COUNT][2] =
     {8, 4},
 };
 
-#define GRASS_STARTER (IS_FRLG ? SPECIES_BULBASAUR  : SPECIES_TREECKO)
-#define FIRE_STARTER  (IS_FRLG ? SPECIES_CHARMANDER : SPECIES_TORCHIC)
-#define WATER_STARTER (IS_FRLG ? SPECIES_SQUIRTLE   : SPECIES_MUDKIP )
-
-static const u16 sStarterMon[STARTER_MON_COUNT] =
-{
-    GRASS_STARTER,
-    FIRE_STARTER,
-    WATER_STARTER,
+static const u16 sGrassStarters[] = {
+    SPECIES_BULBASAUR,   // Gen 1
+    SPECIES_CHIKORITA,   // Gen 2
+    SPECIES_TREECKO,     // Gen 3
+    SPECIES_TURTWIG,     // Gen 4
+    SPECIES_SNIVY,       // Gen 5
+    SPECIES_CHESPIN,     // Gen 6
+    SPECIES_ROWLET,      // Gen 7
+    SPECIES_GROOKEY,     // Gen 8
+    SPECIES_SPRIGATITO   // Gen 9
 };
+
+static const u16 sFireStarters[] = {
+    SPECIES_CHARMANDER,  // Gen 1
+    SPECIES_CYNDAQUIL,   // Gen 2
+    SPECIES_TORCHIC,     // Gen 3
+    SPECIES_CHIMCHAR,    // Gen 4
+    SPECIES_TEPIG,       // Gen 5
+    SPECIES_FENNEKIN,    // Gen 6
+    SPECIES_LITTEN,      // Gen 7
+    SPECIES_SCORBUNNY,   // Gen 8
+    SPECIES_FUECOCO      // Gen 9
+};
+
+static const u16 sWaterStarters[] = {
+    SPECIES_SQUIRTLE,    // Gen 1
+    SPECIES_TOTODILE,    // Gen 2
+    SPECIES_MUDKIP,      // Gen 3
+    SPECIES_PIPLUP,      // Gen 4
+    SPECIES_OSHAWOTT,    // Gen 5
+    SPECIES_FROAKIE,     // Gen 6
+    SPECIES_POPPLIO,     // Gen 7
+    SPECIES_SOBBLE,      // Gen 8
+    SPECIES_QUAXLY       // Gen 9
+};
+// Filled once when the starter screen is opened.
+static u16 sStarterMon[STARTER_MON_COUNT];
+
+static u16 GetRandomStarterFromList(const u16 *starters, u8 count)
+{
+    return starters[Random() % count];
+}
 
 static const struct BgTemplate sBgTemplates[3] =
 {
@@ -420,6 +453,12 @@ void CB2_ChooseStarter(void)
     LoadCompressedSpriteSheet(&sSpriteSheet_StarterCircle[0]);
     LoadSpritePalettes(sSpritePalettes_StarterChoose);
     BeginNormalPaletteFade(PALETTES_ALL, 0, 0x10, 0, RGB_BLACK);
+
+    // Randomize which Gen 1-3 starter species show up in each category.
+    // sStarterMon[0] = GetRandomStarterFromList(sGrassStarters, ARRAY_COUNT(sGrassStarters));
+    sStarterMon[0] = SPECIES_HAUNTER;
+    sStarterMon[1] = GetRandomStarterFromList(sFireStarters, ARRAY_COUNT(sFireStarters));
+    sStarterMon[2] = GetRandomStarterFromList(sWaterStarters, ARRAY_COUNT(sWaterStarters));
 
     EnableInterrupts(DISPSTAT_VBLANK);
     SetVBlankCallback(VblankCB_StarterChoose);

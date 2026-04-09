@@ -148,4 +148,8 @@
 // Trainer Rematches
 #define OW_REMATCH_BADGE_COUNT      5 // Number of badges necessary before the match call or vs seeker features allow rematches
 
+// New game (Emerald only — FRLG uses Oak speech instead)
+// If TRUE: skips Birch's long intro and the moving-van cutscene; you still choose gender and name.
+#define B_SKIP_NEW_GAME_INTRO       FALSE
+
 #endif // GUARD_CONFIG_OVERWORLD_H

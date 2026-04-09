@@ -46,8 +46,15 @@
 #include "berry_powder.h"
 #include "mystery_gift.h"
 #include "union_room_chat.h"
+#include "config/overworld.h"
 #include "constants/map_groups.h"
 #include "constants/items.h"
+#if !IS_FRLG && B_SKIP_NEW_GAME_INTRO
+#include "constants/flags.h"
+#include "constants/heal_locations.h"
+#include "constants/vars.h"
+#include "event_data.h"
+#endif
 #include "difficulty.h"
 #include "follower_npc.h"
 
@@ -56,6 +63,9 @@ extern const u8 EventScript_ResetAllMapFlagsFrlg[];
 
 static void ClearFrontierRecord(void);
 static void WarpToTruck(void);
+#if !IS_FRLG && B_SKIP_NEW_GAME_INTRO
+static void ApplyPostMovingVanIntroFlags(void);
+#endif
 static void ResetMiniGamesRecords(void);
 static void ResetItemFlags(void);
 static void ResetDexNav(void);
@@ -132,12 +142,54 @@ static void ClearFrontierRecord(void)
     gSaveBlock2Ptr->frontier.opponentNames[1][0] = EOS;
 }
 
+#if !IS_FRLG && B_SKIP_NEW_GAME_INTRO
+// Match InsideOfTruck_EventScript_SetIntroFlags* so story state matches having left the truck.
+static void ApplyPostMovingVanIntroFlags(void)
+{
+    if (gSaveBlock2Ptr->playerGender == MALE)
+    {
+        SetLastHealLocationWarp(HEAL_LOCATION_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F);
+        VarSet(VAR_LITTLEROOT_INTRO_STATE, 1);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_TRUCK);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_RIVAL_SIBLING);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F_POKE_BALL);
+        VarSet(VAR_LITTLEROOT_HOUSES_STATE_BRENDAN, 1);
+        SetDynamicWarpWithCoords(0, MAP_GROUP(MAP_LITTLEROOT_TOWN), MAP_NUM(MAP_LITTLEROOT_TOWN), WARP_ID_NONE, 3, 10);
+    }
+    else
+    {
+        SetLastHealLocationWarp(HEAL_LOCATION_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
+        VarSet(VAR_LITTLEROOT_INTRO_STATE, 2);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_BRENDANS_HOUSE_TRUCK);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_MOM);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_RIVAL_SIBLING);
+        FlagSet(FLAG_HIDE_LITTLEROOT_TOWN_MAYS_HOUSE_2F_POKE_BALL);
+        VarSet(VAR_LITTLEROOT_HOUSES_STATE_MAY, 1);
+        SetDynamicWarpWithCoords(0, MAP_GROUP(MAP_LITTLEROOT_TOWN), MAP_NUM(MAP_LITTLEROOT_TOWN), WARP_ID_NONE, 12, 10);
+    }
+}
+#endif
+
 static void WarpToTruck(void)
 {
     if (IS_FRLG)
+    {
         SetWarpDestination(MAP_GROUP(MAP_PALLET_TOWN_PLAYERS_HOUSE_2F), MAP_NUM(MAP_PALLET_TOWN_PLAYERS_HOUSE_2F), WARP_ID_NONE, 6, 6);
+    }
     else
+    {
+#if B_SKIP_NEW_GAME_INTRO
+        if (gSaveBlock2Ptr->playerGender == MALE)
+            SetWarpDestinationToHealLocation(HEAL_LOCATION_LITTLEROOT_TOWN_BRENDANS_HOUSE_2F);
+        else
+            SetWarpDestinationToHealLocation(HEAL_LOCATION_LITTLEROOT_TOWN_MAYS_HOUSE_2F);
+#else
         SetWarpDestination(MAP_GROUP(MAP_INSIDE_OF_TRUCK), MAP_NUM(MAP_INSIDE_OF_TRUCK), WARP_ID_NONE, -1, -1);
+#endif
+    }
     WarpIntoMap();
 }
 
@@ -187,7 +239,7 @@ void NewGameInitData(void)
     ResetGabbyAndTy();
     ClearSecretBases();
     ClearBerryTrees();
-    SetMoney(&gSaveBlock1Ptr->money, 3000);
+    SetMoney(&gSaveBlock1Ptr->money, 99991);
     SetCoins(0);
     ResetLinkContestBoolean();
     ResetGameStats();
@@ -201,6 +253,9 @@ void NewGameInitData(void)
     DeactivateAllRoamers();
     gSaveBlock1Ptr->registeredItem = ITEM_NONE;
     ClearBag();
+    // Give 999 Rare Candies immediately on new game.
+    SetBagItemsPointers();
+    AddBagItem(ITEM_RARE_CANDY, 999);
     NewGameInitPCItems();
     ClearPokeblocks();
     ClearDecorationInventories();
@@ -214,6 +269,9 @@ void NewGameInitData(void)
         RunScriptImmediately(EventScript_ResetAllMapFlagsFrlg);
     else
         RunScriptImmediately(EventScript_ResetAllMapFlags);
+#if !IS_FRLG && B_SKIP_NEW_GAME_INTRO
+    ApplyPostMovingVanIntroFlags();
+#endif
 #if IS_FRLG
         StringCopy(gSaveBlock1Ptr->rivalName, rivalName);
 #endif
