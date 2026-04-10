@@ -95,7 +95,7 @@
               {
                 "min_level": 2,
                 "max_level": 2,
-                "species": "SPECIES_WURMPLE"
+                "species": "SPECIES_SENTRET"
               },
               {
                 "min_level": 3,
@@ -115,7 +115,7 @@
               {
                 "min_level": 3,
                 "max_level": 3,
-                "species": "SPECIES_WURMPLE"
+                "species": "SPECIES_SENTRET"
               },
               {
                 "min_level": 3,
@@ -184,12 +184,12 @@
               {
                 "min_level": 3,
                 "max_level": 3,
-                "species": "SPECIES_ZIGZAGOON"
+                "species": "SPECIES_SENTRET"
               },
               {
-                "min_level": 3,
-                "max_level": 3,
-                "species": "SPECIES_ZIGZAGOON"
+                "min_level": 4,
+                "max_level": 4,
+                "species": "SPECIES_SENTRET"
               },
               {
                 "min_level": 4,
@@ -744,13 +744,13 @@
               },
               {
                 "min_level": 12,
-                "max_level": 12,
-                "species": "SPECIES_WINGULL"
+                "max_level": 14,
+                "species": "SPECIES_ELEKID"
               },
               {
                 "min_level": 12,
-                "max_level": 12,
-                "species": "SPECIES_WINGULL"
+                "max_level": 14,
+                "species": "SPECIES_ELEKID"
               },
               {
                 "min_level": 12,
@@ -1479,7 +1479,7 @@
               {
                 "min_level": 14,
                 "max_level": 14,
-                "species": "SPECIES_ILLUMISE"
+                "species": "SPECIES_EEVEE"
               },
               {
                 "min_level": 13,
@@ -1636,9 +1636,9 @@
                 "species": "SPECIES_WINGULL"
               },
               {
-                "min_level": 27,
-                "max_level": 27,
-                "species": "SPECIES_WINGULL"
+                "min_level": 24,
+                "max_level": 22,
+                "species": "SPECIES_GROWLITHE"
               },
               {
                 "min_level": 25,
@@ -1861,7 +1861,7 @@
               {
                 "min_level": 6,
                 "max_level": 6,
-                "species": "SPECIES_WURMPLE"
+                "species": "SPECIES_PARAS"
               },
               {
                 "min_level": 6,
@@ -2575,13 +2575,13 @@
               },
               {
                 "min_level": 14,
-                "max_level": 14,
-                "species": "SPECIES_TORKOAL"
+                "max_level": 16,
+                "species": "SPECIES_MAGBY"
               },
               {
-                "min_level": 16,
+                "min_level": 14,
                 "max_level": 16,
-                "species": "SPECIES_TORKOAL"
+                "species": "SPECIES_MAGBY"
               },
               {
                 "min_level": 14,
