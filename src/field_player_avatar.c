@@ -943,7 +943,8 @@ static void PlayerNotOnBikeMoving(enum Direction direction, u16 heldKeys)
         if (ObjectMovingOnRockStairs(&gObjectEvents[gPlayerAvatar.objectEventId], direction))
             PlayerWalkSlowStairs(direction);
         else
-            PlayerWalkNormal(direction);
+            /* ~2× vanilla walk (MOVE_SPEED_FAST_1 vs MOVE_SPEED_NORMAL); same step rate as B-run */
+            PlayerWalkFast(direction);
     }
 }
 
