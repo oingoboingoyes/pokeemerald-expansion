@@ -16,6 +16,7 @@
 #include "oras_dowse.h"
 #include "overworld.h"
 #include "party_menu.h"
+#include "pokemon.h"
 #include "random.h"
 #include "rotating_gate.h"
 #include "rtc.h"
@@ -1641,7 +1642,7 @@ bool8 PartyHasMonWithSurf(void)
         {
             if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES) == SPECIES_NONE)
                 break;
-            if (MonKnowsMove(&gPlayerParty[i], MOVE_SURF))
+            if (MonCanUseMoveOnField(&gPlayerParty[i], MOVE_SURF))
                 return TRUE;
         }
     }

@@ -72,6 +72,7 @@
 #include "constants/trainers.h"
 #include "constants/union_room.h"
 #include "constants/weather.h"
+#include "config/overworld.h"
 
 extern u16 gSpecialVar_ItemId;
 
@@ -3988,8 +3989,12 @@ bool8 PokemonUseItemEffects(struct Pokemon *mon, enum Item item, u8 partyIndex, 
                 }
                 else if (param - 1 < ARRAY_COUNT(sExpCandyExperienceTable)) // EXP Candies
                 {
+                    u32 addExp = sExpCandyExperienceTable[param - 1];
                     u16 species = GetMonData(mon, MON_DATA_SPECIES);
-                    dataUnsigned = sExpCandyExperienceTable[param - 1] + GetMonData(mon, MON_DATA_EXP);
+
+                    if (IsDoubleExpFlagEnabled())
+                        addExp *= 2;
+                    dataUnsigned = addExp + GetMonData(mon, MON_DATA_EXP);
 
                     if (B_RARE_CANDY_CAP && B_EXP_CAP_TYPE == EXP_CAP_HARD)
                     {
@@ -5671,6 +5676,17 @@ u16 GetMonEVCount(struct Pokemon *mon)
     return count;
 }
 
+bool32 IsDoubleExpFlagEnabled(void)
+{
+#if B_DOUBLE_EXP_ENABLED == FALSE
+    return FALSE;
+#elif B_FLAG_DOUBLE_EXP != 0
+    return FlagGet(B_FLAG_DOUBLE_EXP);
+#else
+    return TRUE;
+#endif
+}
+
 bool8 TryIncrementMonLevel(struct Pokemon *mon)
 {
     u16 species = GetMonData(mon, MON_DATA_SPECIES, 0);
@@ -5702,6 +5718,55 @@ u8 CanLearnTeachableMove(u16 species, enum Move move)
         if (teachableLearnset[i] == move)
             return TRUE;
     }
+    return FALSE;
+}
+
+static bool8 SpeciesHasMoveInLevelUpLearnset(u16 species, enum Move move)
+{
+    const struct LevelUpMove *learnset;
+    u32 i;
+
+    if (species == SPECIES_NONE || species == SPECIES_EGG)
+        return FALSE;
+
+    do
+    {
+        learnset = GetSpeciesLevelUpLearnset(species);
+        for (i = 0; i < MAX_LEVEL_UP_MOVES && learnset[i].move != LEVEL_UP_MOVE_END; i++)
+        {
+            if (learnset[i].move == move)
+                return TRUE;
+        }
+        species = (P_PRE_EVO_MOVES ? GetSpeciesPreEvolution(species) : SPECIES_NONE);
+    } while (species != SPECIES_NONE);
+
+    return FALSE;
+}
+
+bool8 MonCanUseMoveOnField(struct Pokemon *mon, enum Move move)
+{
+    u32 i;
+    u16 species;
+
+    if (GetMonData(mon, MON_DATA_IS_EGG))
+        return FALSE;
+
+    for (i = 0; i < MAX_MON_MOVES; i++)
+    {
+        if (GetMonData(mon, MON_DATA_MOVE1 + i) == move)
+            return TRUE;
+    }
+
+#if OW_FIELD_MOVES_USE_LEARNSET == TRUE
+    species = GetMonData(mon, MON_DATA_SPECIES_OR_EGG);
+    if (species == SPECIES_NONE || species == SPECIES_EGG)
+        return FALSE;
+    if (CanLearnTeachableMove(species, move))
+        return TRUE;
+    if (SpeciesHasMoveInLevelUpLearnset(species, move))
+        return TRUE;
+#endif
+
     return FALSE;
 }
 

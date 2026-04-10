@@ -17,6 +17,10 @@
 #define B_SCALED_EXP                GEN_LATEST // In Gen5 and Gen7+, experience is weighted by level difference.
 #define B_UNEVOLVED_EXP_MULTIPLIER  GEN_LATEST // In Gen6+, if the Pokémon is at or past the level where it would be able to evolve, but it has not, it gets a ~1.2 multiplier to EXP gain. Only applies to Pokémon with EVO_LEVEL method.
 #define B_LEVEL_UP_NOTIFICATION     GEN_LATEST // In Gen9+, if the Pokémon gets enough experience to level up multiple times, the message is only displayed once.
+// When TRUE, experience from battles, Exp. Candies, and Day Care steps can be doubled (see B_FLAG_DOUBLE_EXP). When FALSE, doubling is never applied.
+#define B_DOUBLE_EXP_ENABLED        TRUE
+// When 0, no script flag is required (doubling follows B_DOUBLE_EXP_ENABLED only). When set to a flag id, doubling applies only while B_DOUBLE_EXP_ENABLED is TRUE and FlagGet(B_FLAG_DOUBLE_EXP) is true.
+#define B_FLAG_DOUBLE_EXP           0
 
 // Stat settings
 #define B_BADGE_BOOST               GEN_LATEST // In Gen4+, Gym Badges no longer boost a Pokémon's stats. (Gen2 does not include the additional boost to the type matching the gym the badge is from)

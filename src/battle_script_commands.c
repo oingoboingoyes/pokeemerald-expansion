@@ -11883,6 +11883,9 @@ void ApplyExperienceMultipliers(s32 *expAmount, u8 expGetterMonId, u8 faintedBat
 
         *expAmount = value + 1;
     }
+
+    if (IsDoubleExpFlagEnabled())
+        *expAmount *= 2;
 }
 
 void BS_ItemRestoreHP(void)

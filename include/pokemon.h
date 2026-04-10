@@ -864,6 +864,8 @@ void MonGainEVs(struct Pokemon *mon, u16 defeatedSpecies);
 u16 GetMonEVCount(struct Pokemon *mon);
 bool8 TryIncrementMonLevel(struct Pokemon *mon);
 u8 CanLearnTeachableMove(u16 species, enum Move move);
+bool8 MonCanUseMoveOnField(struct Pokemon *mon, enum Move move);
+bool32 IsDoubleExpFlagEnabled(void);
 u8 GetLevelUpMovesBySpecies(u16 species, u16 *moves);
 u16 SpeciesToPokedexNum(u16 species);
 bool32 IsSpeciesInRegionalDex(u16 species);

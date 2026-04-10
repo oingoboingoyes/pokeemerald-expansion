@@ -12,6 +12,8 @@
 #define OW_WHITEOUT_CUTSCENE            GEN_LATEST // In Gen4+, whiting out shows an additional message and post whiteout event script cutscene with a healing NPC. (While this change was also in FRLG, for the sake of simplicity, setting this to GEN_3 will result in RSE behavior.)
 #define OW_DEFOG_FIELD_MOVE             FALSE      // If enabled, Defog can be used as a Field Move as seen in DPPt.
 #define OW_ROCK_CLIMB_FIELD_MOVE        FALSE      // If enabled, Rock Climb can be used as a Field Move as seen in DPPt.
+// If TRUE, overworld field moves (party menu, surf prompt, checkfieldmove script) work when the species can learn the move (teachable/TM-HM data or level-up, including pre-evo chain if P_PRE_EVO_MOVES), not only when the move is in the current moveset.
+#define OW_FIELD_MOVES_USE_LEARNSET     TRUE
 #define OW_CHOOSE_FROM_PC_AND_PARTY     TRUE       // If enabled, NPCs like move tutors or trainers asking for trade will let you pick a pokemon from your PC or party instead of just your party
 
 // Item Obtain Description Box
