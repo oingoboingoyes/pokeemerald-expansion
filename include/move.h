@@ -209,12 +209,11 @@ extern const struct BattleMoveEffect gBattleMoveEffects[];
 
 static inline enum Move SanitizeMoveId(enum Move moveId)
 {
-    assertf(moveId < MOVES_COUNT_ALL, "invalid move: %d", moveId)
-    {
-        return MOVE_NONE;
-    }
-
-    return moveId;
+    // Party/box/save data can contain out-of-range IDs (corrupt saves, cheats, older
+    // ROM revisions). Treat like release builds: clamp instead of assertf so UI never traps.
+    if ((unsigned)moveId < MOVES_COUNT_ALL)
+        return moveId;
+    return MOVE_NONE;
 }
 
 static inline const u8 *GetMoveName(enum Move moveId)

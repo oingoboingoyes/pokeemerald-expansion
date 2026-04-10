@@ -14,9 +14,7 @@ ApricornTreeScript::
 
 ApricornTree_EventScript_WantToPick::
 	buffernumberstring STR_VAR_2, VAR_0x8005
-	msgbox ApricornTree_Text_WantToPick, MSGBOX_YESNO
-	goto_if_eq VAR_RESULT, YES, ApricornTree_EventScript_PickApricorn
-	goto_if_eq VAR_RESULT, NO, ApricornTree_EventScript_CancelPickingApricorn
+	goto ApricornTree_EventScript_PickApricorn
 
 .set APRICORN_NORMAL_BAG_FULL, 0
 .set APRICORN_NORMAL_SPACE_IN_BAG, 1
