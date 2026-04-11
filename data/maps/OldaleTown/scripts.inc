@@ -33,6 +33,23 @@ OldaleTown_EventScript_Girl::
 	msgbox OldaleTown_Text_SavingMyProgress, MSGBOX_NPC
 	end
 
+OldaleTown_EventScript_DrugDealer::
+	lock
+	faceplayer
+	msgbox OldaleTown_Text_DrugDealer, MSGBOX_DEFAULT
+	closemessage
+	message OldaleTown_Text_DrugDealerShopPrompt
+	waitmessage
+	pokemart OldaleTown_DrugDealer_Shop
+	msgbox gText_PleaseComeAgain, MSGBOX_DEFAULT
+	release
+	end
+
+	.align 2
+OldaleTown_DrugDealer_Shop:
+	.2byte ITEM_UNIDENTIFIED_DRUGS
+	pokemartlistend
+
 OldaleTown_EventScript_MartEmployee::
 	lock
 	faceplayer
@@ -394,4 +411,11 @@ OldaleTown_Text_BrendanLetsGoBack:
 OldaleTown_Text_TownSign:
 	.string "OLDALE TOWN\n"
 	.string "“Where things start off scarce.”$"
+
+OldaleTown_Text_DrugDealer:
+	.string "Psst… The mart's selection is weak.\n"
+	.string "I got something stronger out back.$"
+
+OldaleTown_Text_DrugDealerShopPrompt:
+	.string "So, how much you want?$"
 
