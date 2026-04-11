@@ -2384,8 +2384,11 @@ void UpdateFollowingPokemon(void)
             .localId = OBJ_EVENT_ID_FOLLOWER,
             .graphicsId = GetGraphicsIdForMon(species, shiny, female),
             .flagId = 0,
-            .x = gSaveBlock1Ptr->pos.x,
-            .y = gSaveBlock1Ptr->pos.y,
+            /* Match InitPlayerAvatar: template uses map coords without MAP_OFFSET.
+             * gSaveBlock1Ptr->pos can lag the live player object while moving, which
+             * left the follower multiple tiles behind until it caught up one step/frame. */
+            .x = gObjectEvents[objId].currentCoords.x - MAP_OFFSET,
+            .y = gObjectEvents[objId].currentCoords.y - MAP_OFFSET,
             // If player active, copy player elevation
             .elevation = gObjectEvents[objId].active ? gObjectEvents[objId].currentElevation : 3,
             .movementType = MOVEMENT_TYPE_FOLLOW_PLAYER,
@@ -5872,6 +5875,16 @@ bool8 FollowablePlayerMovement_Step(struct ObjectEvent *objectEvent, struct Spri
     x = objectEvent->currentCoords.x;
     y = objectEvent->currentCoords.y;
     ClearObjectEventMovement(objectEvent, sprite);
+
+    /* If the follower ever desyncs (spawn lag, ledge hop, pokeball timing), only one
+     * tile/step/frame toward previousCoords cannot close a multi-tile gap. Snap to
+     * the tile the player just left so the mon stays one step behind, not a long trail. */
+    if (!objectEvent->invisible
+        && abs(x - targetX) + abs(y - targetY) > 1)
+    {
+        MoveObjectEventToMapCoords(objectEvent, targetX, targetY);
+        return FALSE;
+    }
 
     if (objectEvent->invisible)
     {
