@@ -1883,7 +1883,6 @@ void CB2_NewGame(void)
     ResetSafariZoneFlag_();
     NewGameInitData();
     SetBagItemsPointers();
-    AddBagItem(ITEM_UNIDENTIFIED_DRUGS, 10);
     ResetInitialPlayerAvatarState();
     PlayTimeCounter_Start();
     ScriptContext_Init();
